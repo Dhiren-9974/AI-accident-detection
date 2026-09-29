@@ -1,0 +1,12 @@
+﻿*.mp4
+*.avi
+*.mov
+*.mkv
+output/
+uploads/
+.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+node_modules/

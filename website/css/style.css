@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { font-family: 'Inter', sans-serif; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+
+.card { background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: box-shadow 0.2s; }
+.dark .card { background: #1f2937; border-color: #374151; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn { from{transform:translateX(-12px);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes sirenPulse { 0%,100%{opacity:.9} 50%{opacity:1} }
+
+.animate-pulse { animation: pulse 2s infinite; }
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-fade-in { animation: fadeIn .35s ease-out; }
+.animate-slide-in { animation: slideIn .3s ease-out; }
+
+#map { height: 460px; border-radius: 0.75rem; }
+.leaflet-container { background: #1f2937; border-radius: 0.75rem; }
+
+.timeline-item { border-left: 2px solid #10b981; margin-left: 10px; padding-left: 16px; margin-bottom: 14px; position: relative; }
+.timeline-item:before { content:''; position:absolute; left:-6px; top:2px; width:10px; height:10px; background:#10b981; border-radius:50%; }
+.timeline-item.accident { border-left-color: #ef4444; }
+.timeline-item.accident:before { background:#ef4444; box-shadow:0 0 8px rgba(239,68,68,.6); }
+
+.notification-item { padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; transition: all .2s; animation: slideIn .3s ease-out; }
+.notification-item:hover { transform: translateX(3px); }
+.notification-danger { background: rgba(239,68,68,.12); border-left: 3px solid #ef4444; }
+.notification-warning { background: rgba(245,158,11,.12); border-left: 3px solid #f59e0b; }
+.notification-info { background: rgba(59,130,246,.12); border-left: 3px solid #3b82f6; }
+.notification-success { background: rgba(16,185,129,.12); border-left: 3px solid #10b981; }
+
+.gallery-item { aspect-ratio: 1/1; overflow: hidden; border-radius: 12px; cursor: pointer; transition: transform .2s, box-shadow .2s; border: 1px solid #e5e7eb; }
+.gallery-item:hover { transform: scale(1.03); box-shadow: 0 20px 40px rgba(0,0,0,.1); }
+.dark .gallery-item { border-color: #374151; }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.gallery-item:hover img { transform: scale(1.08); }
+
+.badge-critical { background: rgba(239,68,68,.12); border-left: 3px solid #ef4444; }
+.badge-moderate { background: rgba(249,115,22,.12); border-left: 3px solid #f97316; }
+.badge-minor { background: rgba(245,158,11,.12); border-left: 3px solid #f59e0b; }
+
+.status-confirmed { color: #10b981; }
+.status-false_alarm { color: #f59e0b; }
+.status-emergency_response { color: #ef4444; }
+
+#lightbox { backdrop-filter: blur(8px); animation: fadeIn .2s ease-out; }
+#lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,.35); }
+
+input, select, button { transition: all .15s ease; }
+input:focus, select:focus { box-shadow: 0 0 0 3px rgba(16,185,129,.25); border-color: #10b981 !important; }
+
+.skeleton { background: linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%); background-size: 200% 100%; animation: pulse 1.5s infinite; border-radius: 6px; }
+.dark .skeleton { background: linear-gradient(90deg,#374151 25%,#4b5563 50%,#374151 75%); background-size: 200% 100%; }
+
+#sidebar { transition: transform .25s ease; }
+.nav-link.active { background: #ecfdf5; color: #059669; font-weight: 600; }
+.dark .nav-link.active { background: rgba(16,185,129,.15); color: #10b981; }
+
+#progress-bar, #confidence-bar { transition: width .4s cubic-bezier(.4,0,.2,1); }
+
+#siren-overlay { animation: sirenPulse 1s infinite; }
+
+@media (max-width: 768px) {
+    #sidebar { position: fixed; height: 100vh; z-index: 40; }
+    .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-cols-2 { grid-template-columns: 1fr; }
+}

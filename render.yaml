@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: accident-detection-dashboard
+    runtime: docker
+    plan: starter
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: SECRET_KEY
+        generateValue: true
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: ROBOFLOW_API_KEY
+        sync: false
+      - key: ROBOFLOW_WORKSPACE
+        sync: false
+      - key: ROBOFLOW_PROJECT
+        sync: false
+      - key: ROBOFLOW_VERSION
+        value: "1"
+      - key: DATA_DIR
+        value: /app/data
+      - key: CONFIDENCE
+        value: "0.5"
+      - key: PROCESS_EVERY_N_FRAMES
+        value: "2"
+      - key: CRASH_CONFIDENCE_THRESHOLD
+        value: "0.5"
+      - key: IOU_MATCH_THRESHOLD
+        value: "0.3"
+      - key: MAX_LOST_FRAMES
+        value: "5"
+      - key: DETECTION_SPEED
+        value: normal
+      - key: NOTIFICATION_COOLDOWN
+        value: "60"
+      - key: CAMERA_LOCATION
+        value: Unknown
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: FROM_EMAIL
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_PHONE
+        sync: false
+      - key: TWILIO_FROM_WHATSAPP
+        sync: false
+    disk:
+      name: accident-data
+      mountPath: /app/data
+      sizeGB: 1

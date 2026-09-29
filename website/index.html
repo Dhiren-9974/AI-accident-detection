@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Accident Detection Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#10b981', 50: '#ecfdf5', 100: '#d1fae5', 600: '#059669', 700: '#047857' },
+                        danger: { DEFAULT: '#ef4444', 600: '#dc2626' },
+                        warning: { DEFAULT: '#f59e0b', 600: '#d97706' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
+
+    <div id="login-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-gray-200 dark:border-gray-700">
+            <div class="text-center mb-6">
+                <i class="fas fa-shield-alt text-5xl text-primary mb-3"></i>
+                <h2 class="text-2xl font-bold">Dashboard Login</h2>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Enter your credentials to continue</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Username</label>
+                    <input type="text" id="username" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none" placeholder="admin" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none" placeholder="Dhiren@9974" required>
+                </div>
+                <button type="submit" class="w-full bg-primary hover:bg-primary-700 text-white font-semibold py-2.5 rounded-lg transition-colors">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </button>
+                <p id="login-error" class="text-danger text-sm text-center hidden"></p>
+            </form>
+            <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs text-gray-500 dark:text-gray-400">
+                <p class="font-semibold mb-1">Demo Credentials:</p>
+                <p>admin / Dhiren@9974</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+        <nav id="sidebar" class="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 w-64 flex-shrink-0 transition-transform duration-300 transform -translate-x-full md:translate-x-0 fixed md:sticky inset-y-0 z-30">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <h1 class="text-xl font-bold text-primary flex items-center gap-2"><i class="fas fa-car-crash"></i> RDMA Accident.AI</h1>
+            </div>
+            <ul class="p-3 space-y-1">
+                <li><a href="#" data-section="dashboard" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-chart-line w-5"></i>Dashboard</a></li>
+                <li><a href="#" data-section="detection" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-video w-5"></i>Detection</a></li>
+                <li><a href="#" data-section="vehicles" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-id-card w-5"></i>Vehicle Intel</a></li>
+                <li><a href="#" data-section="history" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-history w-5"></i>History</a></li>
+                <li><a href="#" data-section="gallery" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-images w-5"></i>Gallery</a></li>
+                <li><a href="#" data-section="analytics" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-chart-bar w-5"></i>Analytics</a></li>
+                <li><a href="#" data-section="map" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-map-marker-alt w-5"></i>Map</a></li>
+                <li><a href="#" data-section="queue" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-list-ol w-5"></i>Queue</a></li>
+                <li><a href="#" data-section="settings" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-cog w-5"></i>Settings</a></li>
+                <li><a href="#" data-section="about" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"><i class="fas fa-info-circle w-5"></i>About</a></li>
+                <li class="pt-2 border-t border-gray-200 dark:border-gray-700"><a href="#" id="logout-btn" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-danger text-sm font-medium"><i class="fas fa-sign-out-alt w-5"></i>Logout</a></li>
+            </ul>
+        </nav>
+
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 sm:px-6">
+                <div class="flex items-center gap-3">
+                    <button id="sidebar-toggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-bars text-xl"></i></button>
+                    <h2 id="section-title" class="text-xl font-bold">Dashboard</h2>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:block text-warning"></i></button>
+                    <button id="sound-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" title="Toggle Siren"><i class="fas fa-volume-mute text-gray-500" id="sound-icon"></i></button>
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-medium">
+                        <span id="backend-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        <span id="backend-text">Offline</span>
+                    </div>
+                    <span id="user-info" class="text-sm font-medium hidden sm:block">Guest</span>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6">
+                <section id="dashboard" class="section-content space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="card p-4 rounded-xl"><div class="text-sm text-gray-500 dark:text-gray-400">Total Frames</div><div class="text-2xl font-bold" id="dash-total-frames">0</div><div class="text-xs text-gray-400">Processed: <span id="dash-processed">0</span></div></div>
+                        <div class="card p-4 rounded-xl"><div class="text-sm text-gray-500 dark:text-gray-400">Accidents</div><div class="text-2xl font-bold text-danger" id="dash-accidents">0</div><div class="text-xs text-gray-400">Saved: <span id="dash-saved">0</span></div></div>
+                        <div class="card p-4 rounded-xl"><div class="text-sm text-gray-500 dark:text-gray-400">Avg FPS</div><div class="text-2xl font-bold text-primary" id="dash-fps">0.0</div><div class="text-xs text-gray-400">Processing speed</div></div>
+                        <div class="card p-4 rounded-xl"><div class="text-sm text-gray-500 dark:text-gray-400">Current Video</div><div class="text-sm font-bold truncate" id="dash-video">None</div><div class="text-xs text-gray-400">Source: <span id="dash-source">--</span></div></div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="card p-4 rounded-xl lg:col-span-1">
+                            <h3 class="font-semibold mb-2 text-sm"><i class="fas fa-tasks text-primary mr-2"></i>Progress</h3>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2"><div id="progress-bar" class="bg-gradient-to-r from-primary to-accent h-3 rounded-full transition-all duration-500" style="width:0%"></div></div>
+                            <p class="text-xs text-gray-500"><span id="progress-text">0</span>% Complete</p>
+                            <p class="text-xs text-gray-400 mt-1" id="processing-time">Time: --:--</p>
+                        </div>
+                        <div class="card p-4 rounded-xl lg:col-span-1">
+                            <h3 class="font-semibold mb-2 text-sm"><i class="fas fa-car-side text-primary mr-2"></i>Live Vehicle Count</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm"><span><i class="fas fa-car text-blue-500 mr-1"></i>Cars</span><span class="font-bold" id="count-car">0</span></div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm"><span><i class="fas fa-bus text-yellow-500 mr-1"></i>Bus</span><span class="font-bold" id="count-bus">0</span></div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm"><span><i class="fas fa-truck text-orange-500 mr-1"></i>Truck</span><span class="font-bold" id="count-truck">0</span></div>
+                                <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm"><span><i class="fas fa-motorcycle text-green-500 mr-1"></i>Bike</span><span class="font-bold" id="count-bike">0</span></div>
+                            </div>
+                        </div>
+                        <div class="card p-4 rounded-xl lg:col-span-1">
+                            <h3 class="font-semibold mb-2 text-sm"><i class="fas fa-bullseye text-primary mr-2"></i>Confidence</h3>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 mb-2"><div id="confidence-bar" class="bg-gradient-to-r from-green-400 to-green-600 h-4 rounded-full transition-all duration-500" style="width:0%"></div></div>
+                            <p class="text-right font-bold text-xl text-green-600" id="confidence-text">0%</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="card p-4 rounded-xl">
+                            <h3 class="font-semibold mb-3 text-sm"><i class="fas fa-stream text-primary mr-2"></i>Detection Timeline</h3>
+                            <div id="timeline" class="space-y-3 max-h-72 overflow-y-auto pr-2"><p class="text-gray-400 text-sm italic">No events yet.</p></div>
+                        </div>
+                        <div class="card p-4 rounded-xl">
+                            <h3 class="font-semibold mb-3 text-sm"><i class="fas fa-bell text-primary mr-2"></i>Live Notifications</h3>
+                            <div id="notifications-panel" class="space-y-2 max-h-72 overflow-y-auto pr-2"><p class="text-gray-400 text-sm italic">No notifications yet.</p></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="detection" class="section-content hidden space-y-4">
+                    <div class="card p-4 sm:p-6 rounded-xl">
+                        <h3 class="font-semibold mb-4">Live Source Input</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-3 gap-2">
+                                    <label class="cursor-pointer"><input type="radio" name="source-type" value="upload" class="peer sr-only" checked><div class="p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 peer-checked:border-primary text-center"><i class="fas fa-upload mb-1"></i><p class="text-sm font-medium">Upload</p></div></label>
+                                    <label class="cursor-pointer"><input type="radio" name="source-type" value="youtube" class="peer sr-only"><div class="p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 peer-checked:border-primary text-center"><i class="fab fa-youtube mb-1"></i><p class="text-sm font-medium">YouTube</p></div></label>
+                                    <label class="cursor-pointer"><input type="radio" name="source-type" value="rtsp" class="peer sr-only"><div class="p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 peer-checked:border-primary text-center"><i class="fas fa-broadcast-tower mb-1"></i><p class="text-sm font-medium">RTSP / IP</p></div></label>
+                                </div>
+                                <div id="upload-input-wrap">
+                                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6"><i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-2"></i><p class="text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span></p><p class="text-xs text-gray-400 mt-1">MP4, AVI, MOV</p></div>
+                                        <input id="video-upload" type="file" accept="video/*" class="hidden">
+                                    </label>
+                                </div>
+                                <div id="url-input-wrap" class="hidden space-y-2">
+                                    <input id="camera-url" type="text" placeholder="rtsp://username:password@192.168.1.100/live" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none text-sm">
+                                    <p class="text-xs text-gray-400">For webcam, enter camera index like <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">0</code></p>
+                                </div>
+                                <div id="youtube-input-wrap" class="hidden space-y-2">
+                                    <input id="youtube-url" type="text" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary outline-none text-sm">
+                                    <p class="text-xs text-gray-400">Supports YouTube video URLs. The video will be downloaded and analyzed.</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button id="start-detection-btn" class="flex-1 bg-primary hover:bg-primary-700 text-white font-semibold py-2.5 rounded-lg transition-colors"><i class="fas fa-play mr-2"></i>Start</button>
+                                    <button id="stop-detection-btn" class="flex-1 bg-danger hover:bg-danger-600 text-white font-semibold py-2.5 rounded-lg transition-colors hidden"><i class="fas fa-stop mr-2"></i>Stop</button>
+                                </div>
+                                <div id="detection-status" class="text-sm font-medium text-gray-500">Status: Idle</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Preview</label>
+                                <div class="bg-gray-900 rounded-xl overflow-hidden aspect-video flex items-center justify-center relative">
+                                    <video id="preview-video" class="w-full h-full object-contain hidden" muted playsinline></video>
+                                    <div id="preview-placeholder" class="text-gray-400 flex flex-col items-center"><i class="fas fa-video-slash text-4xl mb-2"></i><p class="text-sm">No active stream</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="vehicles" class="section-content hidden space-y-4">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <h3 class="font-semibold text-lg">Vehicle Intelligence</h3>
+                        <div class="text-sm font-medium text-gray-500">Live Plates Detected: <span id="veh-plate-count" class="text-primary font-bold">0</span></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="card p-4 rounded-xl">
+                            <h4 class="font-semibold mb-3 text-sm"><i class="fas fa-id-card text-primary mr-2"></i>Live Plate Reads</h4>
+                            <div id="plate-reads" class="space-y-3 max-h-80 overflow-y-auto pr-2"><p class="text-gray-400 text-sm italic">No plates captured yet.</p></div>
+                        </div>
+                        <div class="card p-4 rounded-xl">
+                            <h4 class="font-semibold mb-3 text-sm"><i class="fas fa-search text-primary mr-2"></i>Owner Lookup by Plate</h4>
+                            <div class="flex gap-2 mb-3">
+                                <input id="plate-search" type="text" placeholder="Enter plate e.g. MH01AB1234" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm uppercase">
+                                <button onclick="lookupPlate()" class="bg-primary hover:bg-primary-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"><i class="fas fa-search mr-1"></i>Lookup</button>
+                            </div>
+                            <div id="owner-detail" class="text-sm text-gray-500 italic">Enter a plate number to view full owner details.</div>
+                        </div>
+                    </div>
+
+                    <div class="card p-4 sm:p-6 rounded-xl space-y-4">
+                        <h4 class="font-semibold text-sm"><i class="fas fa-database text-primary mr-2"></i>Vehicle Registry</h4>
+                        <form id="vehicle-form" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <input name="plate_number" placeholder="Plate *" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm uppercase" required>
+                            <input name="vehicle_type" placeholder="Type (car/truck)" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <input name="make" placeholder="Make" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <input name="model" placeholder="Model" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <input name="color" placeholder="Color" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <input name="year" placeholder="Year" type="number" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <input name="owner_name" placeholder="Owner Name *" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm" required>
+                            <input name="owner_phone" placeholder="Phone" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <input name="owner_email" placeholder="Email" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm md:col-span-2">
+                            <input name="address" placeholder="Address" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm md:col-span-2">
+                            <input name="registration_date" placeholder="Reg. Date (YYYY-MM-DD)" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <input name="insurance_expiry" placeholder="Insurance Exp. (YYYY-MM-DD)" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <button type="submit" class="bg-primary hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors md:col-span-4"><i class="fas fa-save mr-1"></i>Add / Update Vehicle</button>
+                        </form>
+                    </div>
+
+                    <div class="card p-4 rounded-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold text-sm"><i class="fas fa-list text-primary mr-2"></i>Registered Vehicles</h4>
+                            <input id="registry-search" type="text" placeholder="Filter..." onkeyup="filterRegistry()" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
+                                    <tr><th class="px-4 py-3">Plate</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Make/Model</th><th class="px-4 py-3">Owner</th><th class="px-4 py-3">Phone</th><th class="px-4 py-3">Ins. Exp.</th><th class="px-4 py-3">Actions</th></tr>
+                                </thead>
+                                <tbody id="registry-table-body"><tr><td colspan="7" class="px-4 py-8 text-center text-gray-400 italic">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card p-4 rounded-xl">
+                        <h4 class="font-semibold mb-3 text-sm"><i class="fas fa-history text-primary mr-2"></i>Plate Capture Log</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
+                                    <tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Plate</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Owner</th><th class="px-4 py-3">Time</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Actions</th></tr>
+                                </thead>
+                                <tbody id="detections-table-body"><tr><td colspan="7" class="px-4 py-8 text-center text-gray-400 italic">No captures yet.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="history" class="section-content hidden space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <h3 class="font-semibold text-lg">Accident History</h3>
+                        <button onclick="downloadReport()" class="bg-primary hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"><i class="fas fa-file-pdf mr-2"></i>Export PDF</button>
+                    </div>
+                    <div class="card p-4 rounded-xl">
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <button onclick="filterHistory('today')" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600">Today</button>
+                            <button onclick="filterHistory('yesterday')" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600">Yesterday</button>
+                            <button onclick="filterHistory('week')" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600">Last Week</button>
+                            <button onclick="filterHistory('all')" class="px-3 py-1.5 rounded-lg bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-sm font-medium">All</button>
+                            <select id="filter-vehicle" onchange="filterHistory('vehicle')" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"><option value="all">All Vehicles</option><option value="car">Car</option><option value="truck">Truck</option><option value="bus">Bus</option><option value="motorcycle">Bike</option></select>
+                            <input id="filter-search" type="text" placeholder="Search..." onkeyup="filterHistory('search')" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
+                                    <tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Date / Time</th><th class="px-4 py-3">Severity</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Confidence</th><th class="px-4 py-3">Vehicle Type</th><th class="px-4 py-3">Video</th><th class="px-4 py-3">Actions</th></tr>
+                                </thead>
+                                <tbody id="history-table-body"><tr><td colspan="8" class="px-4 py-8 text-center text-gray-400 italic">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="gallery" class="section-content hidden space-y-4">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <h3 class="font-semibold text-lg">Accident Gallery</h3>
+                        <span class="text-sm text-gray-500">Showing <span id="gallery-count">0</span> capture(s)</span>
+                    </div>
+                    <div class="flex gap-2 flex-wrap" id="gallery-filters">
+                        <button data-type="all" onclick="filterGallery('all')" class="gallery-filter px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium">All <span class="ml-1 opacity-80">(<span class="gf-count" data-type="all">0</span>)</span></button>
+                        <button data-type="car" onclick="filterGallery('car')" class="gallery-filter px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600">Car <span class="ml-1 opacity-80">(<span class="gf-count" data-type="car">0</span>)</span></button>
+                        <button data-type="truck" onclick="filterGallery('truck')" class="gallery-filter px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600">Truck <span class="ml-1 opacity-80">(<span class="gf-count" data-type="truck">0</span>)</span></button>
+                        <button data-type="bus" onclick="filterGallery('bus')" class="gallery-filter px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600">Bus <span class="ml-1 opacity-80">(<span class="gf-count" data-type="bus">0</span>)</span></button>
+                        <button data-type="motorcycle" onclick="filterGallery('motorcycle')" class="gallery-filter px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600">Bike <span class="ml-1 opacity-80">(<span class="gf-count" data-type="motorcycle">0</span>)</span></button>
+                    </div>
+                    <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"><p class="text-gray-400 col-span-full text-center py-12 italic">No accident frames yet.</p></div>
+                </section>
+
+                <section id="analytics" class="section-content hidden space-y-4">
+                    <h3 class="font-semibold text-lg">Analytics</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="card p-4 rounded-xl"><canvas id="chart-daily"></canvas></div>
+                        <div class="card p-4 rounded-xl"><canvas id="chart-hourly"></canvas></div>
+                        <div class="card p-4 rounded-xl"><canvas id="chart-types"></canvas></div>
+                        <div class="card p-4 rounded-xl"><canvas id="chart-severity"></canvas></div>
+                    </div>
+                </section>
+
+                <section id="map" class="section-content hidden space-y-4">
+                    <h3 class="font-semibold text-lg">Location Map</h3>
+                    <div class="card p-4 rounded-xl">
+                        <div class="flex flex-col sm:flex-row gap-2 mb-3">
+                            <input id="map-lat" type="number" step="any" placeholder="Latitude" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm flex-1">
+                            <input id="map-lng" type="number" step="any" placeholder="Longitude" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm flex-1">
+                            <input id="map-loc-name" type="text" placeholder="Location Name" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm flex-1">
+                            <button onclick="saveLocation()" class="bg-primary hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"><i class="fas fa-map-marker-alt mr-1"></i>Save</button>
+                            <button onclick="findHospitals()" class="bg-danger hover:bg-danger-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"><i class="fas fa-hospital mr-1"></i>Find Hospital</button>
+                        </div>
+                        <div id="map-canvas" class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700" style="height: 460px;"></div>
+                    </div>
+                </section>
+
+                <section id="queue" class="section-content hidden space-y-4">
+                    <h3 class="font-semibold text-lg">Video Queue</h3>
+                    <div class="card p-4 rounded-xl">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                            <input id="queue-path" type="text" placeholder="Video path / URL / RTSP" class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
+                            <select id="queue-type" class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"><option value="file">File</option><option value="rtsp">RTSP</option><option value="ip_camera">IP Camera</option><option value="webcam">Webcam</option></select>
+                            <button onclick="addToQueue()" class="bg-primary hover:bg-primary-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"><i class="fas fa-plus mr-2"></i>Add</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700">
+                                    <tr><th class="px-4 py-3">#</th><th class="px-4 py-3">Source</th><th class="px-4 py-3">Type</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Created</th><th class="px-4 py-3">Actions</th></tr>
+                                </thead>
+                                <tbody id="queue-table-body"><tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic">No videos in queue.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="settings" class="section-content hidden space-y-4">
+                    <h3 class="font-semibold text-lg">Settings</h3>
+                    <div class="card p-4 sm:p-6 rounded-xl space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium mb-1">Confidence Threshold</label><input id="set-confidence" type="number" step="0.01" min="0" max="1" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                            <div><label class="block text-sm font-medium mb-1">Process Every N Frames</label><input id="set-process-n" type="number" min="1" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                            <div><label class="block text-sm font-medium mb-1">Notification Cooldown (s)</label><input id="set-cooldown" type="number" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                            <div><label class="block text-sm font-medium mb-1">Detection Speed</label><select id="set-speed" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"><option>normal</option><option>fast</option><option>accurate</option></select></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Camera Location</label><input id="set-camera-location" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm" placeholder="e.g. Main St & 5th Ave"></div>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                            <h4 class="font-semibold mb-3">Telegram Alerts</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium mb-1">Bot Token</label><input id="set-telegram-token" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div><label class="block text-sm font-medium mb-1">Chat ID</label><input id="set-telegram-chat" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                            <h4 class="font-semibold mb-3">Email Alerts (SMTP)</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium mb-1">SMTP Host</label><input id="set-smtp-host" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div><label class="block text-sm font-medium mb-1">SMTP Port</label><input id="set-smtp-port" type="number" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div><label class="block text-sm font-medium mb-1">SMTP Username</label><input id="set-smtp-user" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div><label class="block text-sm font-medium mb-1">SMTP Password</label><input id="set-smtp-pass" type="password" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">From Email</label><input id="set-from-email" type="email" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Alert Recipient Emails <span class="text-gray-400 font-normal">(comma-separated, leave empty to disable)</span></label><input id="set-alert-emails" type="text" placeholder="nogiyadhirendra@gmail.com, other@example.com" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                            <h4 class="font-semibold mb-3">Twilio Alerts</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium mb-1">Account SID</label><input id="set-twilio-sid" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div><label class="block text-sm font-medium mb-1">Auth Token</label><input id="set-twilio-token" type="password" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div><label class="block text-sm font-medium mb-1">From Phone</label><input id="set-twilio-phone" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                                <div><label class="block text-sm font-medium mb-1">WhatsApp From</label><input id="set-whatsapp-from" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"></div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="saveSettings()" class="bg-primary hover:bg-primary-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"><i class="fas fa-save mr-2"></i>Save Settings</button>
+                            <button onclick="testNotification('telegram')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"><i class="fab fa-telegram mr-2"></i>Test Telegram</button>
+                            <button onclick="testNotification('email')" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"><i class="fas fa-envelope mr-2"></i>Test Email</button>
+                        </div>
+                    </div>
+                </section>
+
+                 <section id="about" class="section-content hidden space-y-4">
+                     <h3 class="font-semibold text-lg">About</h3>
+                     <div class="card p-6 rounded-xl space-y-6">
+                         <div>
+                             <h2 class="text-2xl font-bold">AI Accident Detection System</h2>
+                             <p class="text-gray-600 dark:text-gray-300 mt-1">Real-time road accident detection using YOLOv8 and Roboflow. Instant alerts via Telegram, Email, SMS, and WhatsApp.</p>
+                         </div>
+                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                             <div><strong>Technologies:</strong> Flask, YOLOv8, Roboflow, OpenCV, SQLite, Chart.js, Leaflet, ReportLab, Twilio</div>
+                             <div><strong>Team:</strong> RDMA Team</div>
+                         </div>
+                         <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                             <h4 class="font-semibold mb-3 text-sm">What's Inside</h4>
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-chart-line text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Dashboard</div><p class="text-gray-500 dark:text-gray-400 text-xs">Live progress, vehicle counts, confidence & event timeline.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-video text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Detection</div><p class="text-gray-500 dark:text-gray-400 text-xs">Upload, YouTube, RTSP/IP camera & webcam sources.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-history text-primary mt-1"></i>
+                                     <div><div class="font-semibold">History</div><p class="text-gray-500 dark:text-gray-400 text-xs">Searchable accident log with operator confirm / false-alarm / emergency actions.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-images text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Gallery</div><p class="text-gray-500 dark:text-gray-400 text-xs">Captured accident frames filtered by vehicle type.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-chart-bar text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Analytics</div><p class="text-gray-500 dark:text-gray-400 text-xs">Daily, hourly, type, severity & confidence charts with PDF export.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-map-marker-alt text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Map</div><p class="text-gray-500 dark:text-gray-400 text-xs">Geolocate incidents and find nearby hospitals via Overpass.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-transparent rounded-lg">
+                                     <i class="fas fa-list-ol text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Queue</div><p class="text-gray-500 dark:text-gray-400 text-xs">Background video processing queue with priorities.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-id-card text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Vehicle Intel</div><p class="text-gray-500 dark:text-gray-400 text-xs">License-plate capture (OpenCV) with owner lookup & registry.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-bell text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Alerts</div><p class="text-gray-500 dark:text-gray-400 text-xs">Telegram, Email (SMTP), SMS & WhatsApp (Twilio) notifications.</p></div>
+                                 </div>
+                                 <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                     <i class="fas fa-cog text-primary mt-1"></i>
+                                     <div><div class="font-semibold">Settings</div><p class="text-gray-500 dark:text-gray-400 text-xs">Thresholds, camera location, alert channels & credentials.</p></div>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="border-t border-gray-200 dark:border-gray-700 pt-4 text-xs text-gray-500 dark:text-gray-400">
+                             <p>Note: Automatic plate text recognition requires an OCR engine (pytesseract or easyocr). Without it, the Vehicle Intel module localizes plates and supports manual confirmation via the capture log.</p>
+                         </div>
+                     </div>
+                 </section>
+            </main>
+        </div>
+    </div>
+
+    <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
+        <div class="relative max-w-5xl w-full"><img id="lightbox-img" class="max-h-screen mx-auto rounded-lg"><button id="lightbox-close" class="absolute -top-10 right-0 text-white text-3xl hover:text-gray-300">&times;</button></div>
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
